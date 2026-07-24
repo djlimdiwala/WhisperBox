@@ -6,9 +6,9 @@ import com.whisperbox.entity.Message;
 import com.whisperbox.repository.MessageRepository;
 import org.springframework.stereotype.Service;
 import com.whisperbox.dto.MessageResponse;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import java.time.LocalDateTime;
 
@@ -39,9 +39,35 @@ public class MessageService {
 
         repository.save(message);
     }
-    public List<MessageResponse> getMessages(String receiver) {
+        public List<MessageResponse> getMessages(String receiver) {
+                properties.validateUser(receiver);
 
-    return repository.findByReceiverOrderByCreatedAtAsc(receiver)
+        return repository
+                .findByReceiverAndExpiresAtAfterOrderByCreatedAtAsc(
+                        receiver,
+                        LocalDateTime.now())
+                .stream()
+                .map(message -> new MessageResponse(
+                        message.getId(),
+                        message.getSender(),
+                        message.getMessage(),
+                        message.getCreatedAt()
+                ))
+                .toList();
+        }
+
+    public List<MessageResponse> getConversation(String userKey) {
+
+    String sender = properties.sender(userKey);
+    String receiver = properties.receiver(userKey);
+
+    return repository
+            .findBySenderAndReceiverOrSenderAndReceiverOrderByCreatedAtAsc(
+                    sender,
+                    receiver,
+                    receiver,
+                    sender
+            )
             .stream()
             .map(message -> new MessageResponse(
                     message.getId(),
@@ -49,6 +75,26 @@ public class MessageService {
                     message.getMessage(),
                     message.getCreatedAt()
             ))
-            .collect(Collectors.toList());
-    }
+            .toList();
+        }
+
+        @Transactional
+        public List<MessageResponse> getUnreadMessages(String receiver) {
+    List<MessageResponse> messages =
+                repository.findByReceiverAndIsReadFalseAndExpiresAtAfterOrderByCreatedAtAsc(
+                        receiver,
+                        LocalDateTime.now())
+                        .stream()
+                    .map(message -> new MessageResponse(
+                            message.getId(),
+                            message.getSender(),
+                            message.getMessage(),
+                            message.getCreatedAt()
+                    ))
+                    .toList();
+
+    repository.markAsRead(receiver);
+
+    return messages;
+}
 }

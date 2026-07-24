@@ -5,6 +5,7 @@ import com.whisperbox.dto.SendMessageRequest;
 import com.whisperbox.service.MessageService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import com.whisperbox.dto.ApiResponse;
 
 import java.util.List;
 
@@ -18,13 +19,18 @@ public class MessageController {
         this.service = service;
     }
 
-    @PostMapping("/{userKey}")
-    public void send(
-            @PathVariable String userKey,
-            @Valid @RequestBody SendMessageRequest request) {
+@PostMapping("/{userKey}")
+public ApiResponse send(
+        @PathVariable String userKey,
+        @Valid @RequestBody SendMessageRequest request) {
 
-        service.send(userKey, request);
-    }
+    service.send(userKey, request);
+
+    return new ApiResponse(
+            true,
+            "Stored successfully"
+    );
+}
 
     @GetMapping("/{receiver}")
     public List<MessageResponse> getMessages(
@@ -32,4 +38,19 @@ public class MessageController {
 
         return service.getMessages(receiver);
     }
+
+    @GetMapping("/conversation/{userKey}")
+    public List<MessageResponse> conversation(
+        @PathVariable String userKey) {
+
+    return service.getConversation(userKey);
+    }
+
+    @GetMapping("/unread/{receiver}")
+        public List<MessageResponse> unread(
+            @PathVariable String receiver) {
+
+        return service.getUnreadMessages(receiver);
+    }
+
 }

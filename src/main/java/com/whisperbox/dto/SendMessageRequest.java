@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public class SendMessageRequest {
 
-    @NotBlank
+    @NotBlank(message = "Message cannot be blank")
     private String message;
 
     public SendMessageRequest() {

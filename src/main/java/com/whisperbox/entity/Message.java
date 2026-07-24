@@ -21,6 +21,8 @@ public class Message {
 
     private LocalDateTime expiresAt;
 
+    private boolean isRead;
+    
     public Message() {
     }
 
