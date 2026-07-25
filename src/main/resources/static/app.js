@@ -1,3 +1,8 @@
+const CONFIG = {
+    API_BASE: "/messages",
+    WS_ENDPOINT: "/ws"
+};
+
 const secret = window.location.pathname.substring(1);
 
 const currentUser =
@@ -10,8 +15,18 @@ document.getElementById("chatTitle").innerHTML =
         ? "💙 Blue"
         : "🌙 Moon";
 
+const avatar =
+    document.getElementById("avatar");
+
+avatar.innerHTML =
+    secret === "blue"
+        ? "💙"
+        : "🌙";
+
 const textarea =
     document.getElementById("message");
+
+textarea.focus();
 
 textarea.addEventListener("input", () => {
 
@@ -55,6 +70,20 @@ function render(messages) {
     const container =
         document.getElementById("messages");
 
+    if (messages.length === 0) {
+
+        container.innerHTML = `
+            <div id="emptyState">
+                💬
+                <h3>No messages yet</h3>
+                <p>Start your private conversation.</p>
+            </div>
+        `;
+
+        return;
+
+    }
+
     container.innerHTML = "";
 
     messages.forEach(m => {
@@ -63,44 +92,82 @@ function render(messages) {
             m.sender === currentUser;
 
         container.innerHTML += `
+        <div class="message ${mine ? "mine" : "other"}">
 
-<div class="message ${mine ? "mine" : "other"}">
+            <div class="sender">
+                ${mine
+                    ? "You"
+                    : (currentUser === "A" ? "Moon" : "Blue")}
+            </div>
 
-<div class="sender">
+            <div>
+                ${m.message}
+            </div>
 
-${mine ? "You" : m.sender}
+            <div class="time">
+                ${formatTime(m.createdAt)}
+            </div>
 
-</div>
-
-<div>
-
-${m.message}
-
-</div>
-
-<div class="time">
-
-${formatTime(m.createdAt)}
-
-</div>
-
-</div>
-
-`;
+        </div>
+        `;
 
     });
 
-    container.scrollTop =
-        container.scrollHeight;
+    container.scrollTo({
+
+        top: container.scrollHeight,
+
+        behavior: "smooth"
+
+    });
 
 }
 
 async function loadMessages() {
 
-    const response =
-        await fetch("/messages/conversation/" + secret);
+    try {
 
-    render(await response.json());
+        const response =
+            await fetch(
+                `${CONFIG.API_BASE}/conversation/${secret}`
+            );
+
+        const messages =
+            await response.json();
+
+        render(messages);
+
+        document
+            .getElementById("loadingScreen")
+            .style.display = "none";
+
+        document
+            .getElementById("chatContainer")
+            .style.display = "flex";
+
+    }
+    catch (e) {
+
+        toast("Unable to connect.");
+
+    }
+
+}
+
+function toast(message) {
+
+    const t =
+        document.getElementById("toast");
+
+    t.innerHTML = message;
+
+    t.style.display = "block";
+
+    setTimeout(() => {
+
+        t.style.display = "none";
+
+    }, 3000);
 
 }
 
@@ -112,25 +179,45 @@ async function sendMessage() {
     if (message === "")
         return;
 
-    await fetch("/messages/" + secret, {
+    const button =
+        document.getElementById("sendBtn");
 
-        method: "POST",
+    button.disabled = true;
 
-        headers: {
+    try {
 
-            "Content-Type": "application/json"
+        await fetch(
+            `${CONFIG.API_BASE}/${secret}`,
+            {
 
-        },
+                method: "POST",
 
-        body: JSON.stringify({
+                headers: {
 
-            message
+                    "Content-Type": "application/json"
 
-        })
+                },
 
-    });
+                body: JSON.stringify({
+
+                    message
+
+                })
+
+            });
+
+    }
+    catch (e) {
+
+        toast("Unable to send message.");
+
+    }
+
+    button.disabled = false;
 
     textarea.value = "";
+
+    textarea.focus();
 
     textarea.style.height = "50px";
 
@@ -139,7 +226,7 @@ async function sendMessage() {
 loadMessages();
 
 const socket =
-    new SockJS("/ws");
+    new SockJS(CONFIG.WS_ENDPOINT);
 
 const stompClient =
     new StompJs.Client({
@@ -151,6 +238,26 @@ const stompClient =
     });
 
 stompClient.onConnect = () => {
+
+    stompClient.onWebSocketClose = () => {
+
+        document.getElementById(
+            "connectionStatus"
+        ).innerHTML = "🔴 Disconnected";
+
+        document.getElementById(
+            "connectionStatus"
+        ).className = "disconnected";
+
+    };
+
+    document.getElementById(
+        "connectionStatus"
+    ).innerHTML = "🟢 Connected";
+
+    document.getElementById(
+        "connectionStatus"
+    ).className = "connected";
 
     stompClient.subscribe(
 

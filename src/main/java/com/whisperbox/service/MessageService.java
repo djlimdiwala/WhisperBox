@@ -1,48 +1,57 @@
 package com.whisperbox.service;
 
 import com.whisperbox.config.WhisperBoxProperties;
+import com.whisperbox.dto.MessageResponse;
 import com.whisperbox.dto.SendMessageRequest;
 import com.whisperbox.entity.Message;
 import com.whisperbox.repository.MessageRepository;
-import org.springframework.stereotype.Service;
-import com.whisperbox.dto.MessageResponse;
-import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-
-import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class MessageService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(MessageService.class);
 
     private final MessageRepository repository;
     private final WhisperBoxProperties properties;
     private final SimpMessagingTemplate messagingTemplate;
 
-        public MessageService(
-                MessageRepository repository,
-                WhisperBoxProperties properties,
-                SimpMessagingTemplate messagingTemplate) {
+    public MessageService(
+            MessageRepository repository,
+            WhisperBoxProperties properties,
+            SimpMessagingTemplate messagingTemplate) {
 
         this.repository = repository;
         this.properties = properties;
         this.messagingTemplate = messagingTemplate;
-        }
+    }
+
     public void send(String userKey, SendMessageRequest request) {
 
         Message message = new Message();
 
         message.setSender(properties.sender(userKey));
         message.setReceiver(properties.receiver(userKey));
-
         message.setMessage(request.getMessage());
-
         message.setCreatedAt(LocalDateTime.now());
-
         message.setExpiresAt(LocalDateTime.now().plusDays(30));
 
+        log.info("Sending message from {} to {}",
+                message.getSender(),
+                message.getReceiver());
+
         Message saved = repository.save(message);
+
+        log.info("Message {} stored successfully",
+                saved.getId());
 
         MessageResponse response =
                 new MessageResponse(
@@ -62,8 +71,12 @@ public class MessageService {
                 response
         );
     }
-        public List<MessageResponse> getMessages(String receiver) {
-                properties.validateUser(receiver);
+
+    public List<MessageResponse> getMessages(String receiver) {
+
+        properties.validateUser(receiver);
+
+        log.info("Loading messages for {}", receiver);
 
         return repository
                 .findByReceiverAndExpiresAtAfterOrderByCreatedAtAsc(
@@ -77,47 +90,53 @@ public class MessageService {
                         message.getCreatedAt()
                 ))
                 .toList();
-        }
+    }
 
     public List<MessageResponse> getConversation(String userKey) {
 
-    String sender = properties.sender(userKey);
-    String receiver = properties.receiver(userKey);
+        log.info("Loading conversation for {}", userKey);
 
-    return repository
-            .findBySenderAndReceiverOrSenderAndReceiverOrderByCreatedAtAsc(
-                    sender,
-                    receiver,
-                    receiver,
-                    sender
-            )
-            .stream()
-            .map(message -> new MessageResponse(
-                    message.getId(),
-                    message.getSender(),
-                    message.getMessage(),
-                    message.getCreatedAt()
-            ))
-            .toList();
-        }
+        String sender = properties.sender(userKey);
+        String receiver = properties.receiver(userKey);
 
-        @Transactional
-        public List<MessageResponse> getUnreadMessages(String receiver) {
-    List<MessageResponse> messages =
-                repository.findByReceiverAndIsReadFalseAndExpiresAtAfterOrderByCreatedAtAsc(
+        return repository
+                .findBySenderAndReceiverOrSenderAndReceiverOrderByCreatedAtAsc(
+                        sender,
                         receiver,
-                        LocalDateTime.now())
+                        receiver,
+                        sender
+                )
+                .stream()
+                .map(message -> new MessageResponse(
+                        message.getId(),
+                        message.getSender(),
+                        message.getMessage(),
+                        message.getCreatedAt()
+                ))
+                .toList();
+    }
+
+    @Transactional
+    public List<MessageResponse> getUnreadMessages(String receiver) {
+
+        log.info("Loading unread messages for {}", receiver);
+
+        List<MessageResponse> messages =
+                repository
+                        .findByReceiverAndIsReadFalseAndExpiresAtAfterOrderByCreatedAtAsc(
+                                receiver,
+                                LocalDateTime.now())
                         .stream()
-                    .map(message -> new MessageResponse(
-                            message.getId(),
-                            message.getSender(),
-                            message.getMessage(),
-                            message.getCreatedAt()
-                    ))
-                    .toList();
+                        .map(message -> new MessageResponse(
+                                message.getId(),
+                                message.getSender(),
+                                message.getMessage(),
+                                message.getCreatedAt()
+                        ))
+                        .toList();
 
-    repository.markAsRead(receiver);
+        repository.markAsRead(receiver);
 
-    return messages;
-}
+        return messages;
+    }
 }
