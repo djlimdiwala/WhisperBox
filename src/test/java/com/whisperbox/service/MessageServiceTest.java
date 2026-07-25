@@ -13,6 +13,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class MessageServiceTest {
@@ -22,6 +25,9 @@ class MessageServiceTest {
 
     @Mock
     private WhisperBoxProperties properties;
+
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
 
     @InjectMocks
     private MessageService service;
@@ -34,6 +40,16 @@ class MessageServiceTest {
 
         when(properties.sender("A")).thenReturn("A");
         when(properties.receiver("A")).thenReturn("B");
+
+        when(repository.save(any(Message.class)))
+                .thenAnswer(invocation -> {
+
+                    Message message = invocation.getArgument(0);
+
+                    message.setId(1L);
+
+                    return message;
+                });
 
         service.send("A", request);
 

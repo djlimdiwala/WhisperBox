@@ -1,8 +1,8 @@
 package com.whisperbox.config;
 
+import com.whisperbox.exception.InvalidUserException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import com.whisperbox.exception.InvalidUserException;
 
 @Component
 public class WhisperBoxProperties {
@@ -13,41 +13,45 @@ public class WhisperBoxProperties {
     @Value("${whisperbox.userB.url}")
     private String userBUrl;
 
-    public boolean isUserA(String key) {
-        return userAUrl.equals(key);
+    public String sender(String key) {
+
+        if (key.equalsIgnoreCase(userAUrl))
+            return "A";
+
+        if (key.equalsIgnoreCase(userBUrl))
+            return "B";
+
+        throw new InvalidUserException(
+                "Unknown user: " + key);
     }
 
-    public boolean isUserB(String key) {
-        return userBUrl.equals(key);
+    public String receiver(String key) {
+
+        if (key.equalsIgnoreCase(userAUrl))
+            return "B";
+
+        if (key.equalsIgnoreCase(userBUrl))
+            return "A";
+
+        throw new InvalidUserException(
+                "Unknown user: " + key);
     }
 
-    public String sender(String userKey) {
+    public void validateUser(String key) {
 
-        return switch (userKey.toUpperCase()) {
-            case "A" -> "A";
-            case "B" -> "B";
-            default -> throw new InvalidUserException(
-                    "Unknown user: " + userKey);
-        };
-    }
-
-    public String receiver(String userKey) {
-
-        return switch (userKey.toUpperCase()) {
-            case "A" -> "B";
-            case "B" -> "A";
-            default -> throw new InvalidUserException(
-                    "Unknown user: " + userKey);
-        };
-    }
-
-    public void validateUser(String userKey) {
-
-        if (!userKey.equalsIgnoreCase("A")
-                && !userKey.equalsIgnoreCase("B")) {
+        if (!key.equalsIgnoreCase(userAUrl)
+                && !key.equalsIgnoreCase(userBUrl)) {
 
             throw new InvalidUserException(
-                    "Unknown user: " + userKey);
+                    "Unknown user: " + key);
         }
+    }
+
+    public String userAUrl() {
+        return userAUrl;
+    }
+
+    public String userBUrl() {
+        return userBUrl;
     }
 }

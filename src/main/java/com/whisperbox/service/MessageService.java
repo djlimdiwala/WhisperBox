@@ -7,6 +7,7 @@ import com.whisperbox.repository.MessageRepository;
 import org.springframework.stereotype.Service;
 import com.whisperbox.dto.MessageResponse;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 
@@ -17,13 +18,17 @@ public class MessageService {
 
     private final MessageRepository repository;
     private final WhisperBoxProperties properties;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public MessageService(MessageRepository repository,
-                          WhisperBoxProperties properties) {
+        public MessageService(
+                MessageRepository repository,
+                WhisperBoxProperties properties,
+                SimpMessagingTemplate messagingTemplate) {
+
         this.repository = repository;
         this.properties = properties;
-    }
-
+        this.messagingTemplate = messagingTemplate;
+        }
     public void send(String userKey, SendMessageRequest request) {
 
         Message message = new Message();
@@ -37,7 +42,25 @@ public class MessageService {
 
         message.setExpiresAt(LocalDateTime.now().plusDays(30));
 
-        repository.save(message);
+        Message saved = repository.save(message);
+
+        MessageResponse response =
+                new MessageResponse(
+                        saved.getId(),
+                        saved.getSender(),
+                        saved.getMessage(),
+                        saved.getCreatedAt()
+                );
+
+        messagingTemplate.convertAndSend(
+                "/topic/" + message.getReceiver(),
+                response
+        );
+
+        messagingTemplate.convertAndSend(
+                "/topic/" + message.getSender(),
+                response
+        );
     }
         public List<MessageResponse> getMessages(String receiver) {
                 properties.validateUser(receiver);

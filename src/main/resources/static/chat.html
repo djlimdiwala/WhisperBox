@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>WhisperBox</title>
+
+<link rel="stylesheet" href="/style.css">
+
+</head>
+
+<body>
+
+<div class="chat">
+
+    <header>
+
+        <div>
+
+            <h2 id="chatTitle"></h2>
+
+            <small>Private conversation</small>
+
+        </div>
+
+    </header>
+
+    <main id="messages"></main>
+
+    <footer>
+
+        <textarea
+                id="message"
+                rows="1"
+                placeholder="Type your message..."></textarea>
+
+        <button id="sendBtn">
+            ➤
+        </button>
+
+    </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+
+<script src="/app.js"></script>
+
+</body>
+
+</html>
