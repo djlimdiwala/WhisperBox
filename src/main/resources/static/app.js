@@ -228,13 +228,16 @@ loadMessages();
 const socket =
     new SockJS(CONFIG.WS_ENDPOINT);
 
+const socket =
+    new SockJS("/ws");
+
 const stompClient =
     new StompJs.Client({
-
         webSocketFactory: () => socket,
-
-        reconnectDelay: 5000
-
+        reconnectDelay: 5000,
+        connectHeaders: {
+            user: currentUser
+        }
     });
 
 stompClient.onConnect = () => {
@@ -274,3 +277,40 @@ stompClient.onConnect = () => {
 };
 
 stompClient.activate();
+async function loadPresence() {
+    const other =
+        currentUser === "A"
+            ? "B"
+            : "A";
+    const response =
+        await fetch("/presence/" + other);
+    const presence =
+        await response.json();
+    const status =
+        document.getElementById("connectionStatus");
+    if (presence.online) {
+        status.innerHTML = "🟢 Online";
+        status.className = "connected";
+
+    }
+    else if (presence.lastSeen) {
+        const d =
+            new Date(presence.lastSeen);
+        status.innerHTML =
+            "Last seen "
+            + d.toLocaleString();
+        status.className = "disconnected";
+    }
+    else {
+
+        status.innerHTML =
+            "Offline";
+        status.className =
+            "disconnected";
+
+    }
+
+}
+
+loadPresence();
+setInterval(loadPresence,3000);
