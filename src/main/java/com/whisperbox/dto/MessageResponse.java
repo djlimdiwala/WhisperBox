@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public class MessageResponse {
 
@@ -18,12 +18,12 @@ public class MessageResponse {
     private String message;
 
     @Schema(example = "2026-07-24T12:30:15")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public MessageResponse(Long id,
                            String sender,
                            String message,
-                           LocalDateTime createdAt) {
+                           Instant createdAt) {
         this.id = id;
         this.sender = sender;
         this.message = message;
@@ -42,7 +42,7 @@ public class MessageResponse {
         return message;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 }

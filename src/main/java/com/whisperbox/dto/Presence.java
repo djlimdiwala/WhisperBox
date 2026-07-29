@@ -1,11 +1,12 @@
 package com.whisperbox.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.Instant;
 
 public record Presence(
 
         boolean online,
 
-        LocalDateTime lastSeen
+        Instant lastSeen
 
 ) {}

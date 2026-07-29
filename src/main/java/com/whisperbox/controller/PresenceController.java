@@ -10,12 +10,29 @@ public class PresenceController {
 
     private final PresenceService service;
 
-    public PresenceController(PresenceService service) {
+    public PresenceController(
+            PresenceService service) {
+
         this.service = service;
+
+    }
+
+    @PostMapping("/ping/{user}")
+
+    public void ping(
+            @PathVariable String user){
+
+        service.ping(user);
+
     }
 
     @GetMapping("/{user}")
-    public Presence presence(@PathVariable String user) {
-        return service.getPresence(user.toUpperCase());
+
+    public Presence get(
+            @PathVariable String user){
+
+        return service.getPresence(user);
+
     }
+
 }

@@ -5,14 +5,14 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
-import java.time.LocalDateTime;
 import org.springframework.data.jdbc.repository.query.Modifying;
+import java.time.Instant;
 
 public interface MessageRepository extends CrudRepository<Message, Long> {
 
 List<Message> findByReceiverAndExpiresAtAfterOrderByCreatedAtAsc(
         String receiver,
-        LocalDateTime now);
+        Instant now);
 List<Message> findBySenderAndReceiverOrderByCreatedAtAsc(
         String sender,
         String receiver
@@ -26,7 +26,7 @@ List<Message> findBySenderAndReceiverOrderByCreatedAtAsc(
         );
         List<Message> findByReceiverAndIsReadFalseAndExpiresAtAfterOrderByCreatedAtAsc(
                 String receiver,
-                LocalDateTime now);
+                Instant now);
 
         @Modifying
         @Query("""

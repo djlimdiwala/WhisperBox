@@ -12,16 +12,16 @@ const currentUser =
 
 document.getElementById("chatTitle").innerHTML =
     secret === "blue"
-        ? "💙 Blue"
-        : "🌙 Moon";
+        ? "🔷 Blue"
+        : "⚙️ Moon";
 
 const avatar =
     document.getElementById("avatar");
 
 avatar.innerHTML =
     secret === "blue"
-        ? "💙"
-        : "🌙";
+        ? "🖥️"
+        : "💻";
 
 const textarea =
     document.getElementById("message");
@@ -55,13 +55,21 @@ document
 
 function formatTime(date) {
 
-    return new Date(date)
-        .toLocaleTimeString([], {
+    return new Intl.DateTimeFormat(
+        undefined,
+        {
+
+            day: "2-digit",
+
+            month: "2-digit",
 
             hour: "2-digit",
+
             minute: "2-digit"
 
-        });
+        }
+
+    ).format(new Date(date));
 
 }
 
@@ -228,8 +236,6 @@ loadMessages();
 const socket =
     new SockJS(CONFIG.WS_ENDPOINT);
 
-const socket =
-    new SockJS("/ws");
 
 const stompClient =
     new StompJs.Client({
@@ -244,23 +250,11 @@ stompClient.onConnect = () => {
 
     stompClient.onWebSocketClose = () => {
 
-        document.getElementById(
-            "connectionStatus"
-        ).innerHTML = "🔴 Disconnected";
-
-        document.getElementById(
-            "connectionStatus"
-        ).className = "disconnected";
+        toast("Connection lost. Reconnecting...");
 
     };
 
-    document.getElementById(
-        "connectionStatus"
-    ).innerHTML = "🟢 Connected";
-
-    document.getElementById(
-        "connectionStatus"
-    ).className = "connected";
+    loadPresence();
 
     stompClient.subscribe(
 
@@ -296,9 +290,14 @@ async function loadPresence() {
     else if (presence.lastSeen) {
         const d =
             new Date(presence.lastSeen);
-        status.innerHTML =
-            "Last seen "
-            + d.toLocaleString();
+            status.innerHTML =
+                "Last seen " +
+                d.toLocaleString([], {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
         status.className = "disconnected";
     }
     else {
@@ -312,5 +311,25 @@ async function loadPresence() {
 
 }
 
-loadPresence();
-setInterval(loadPresence,3000);
+async function sendHeartbeat() {
+
+    try {
+
+        await fetch("/presence/ping/" + currentUser, {
+
+            method: "POST"
+
+        });
+
+    } catch(e) {}
+
+}
+
+async function startPresence() {
+    await sendHeartbeat();
+    await loadPresence();
+    setInterval(sendHeartbeat, 20000);
+    setInterval(loadPresence, 3000);
+}
+
+startPresence();

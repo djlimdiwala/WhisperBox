@@ -3,7 +3,7 @@ package com.whisperbox.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Table("messages")
 public class Message {
@@ -17,9 +17,9 @@ public class Message {
 
     private String message;
 
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
     private boolean isRead;
     
@@ -58,19 +58,19 @@ public class Message {
         this.message = message;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getExpiresAt() {
+    public Instant getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(LocalDateTime expiresAt) {
+    public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
     }
 }

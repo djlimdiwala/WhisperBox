@@ -11,7 +11,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -41,8 +41,8 @@ public class MessageService {
         message.setSender(properties.sender(userKey));
         message.setReceiver(properties.receiver(userKey));
         message.setMessage(request.getMessage());
-        message.setCreatedAt(LocalDateTime.now());
-        message.setExpiresAt(LocalDateTime.now().plusDays(30));
+        message.setCreatedAt(Instant.now());
+        message.setExpiresAt(Instant.now().plusSeconds(30L * 24 * 60 * 60));
 
         log.info("Sending message from {} to {}",
                 message.getSender(),
@@ -81,7 +81,7 @@ public class MessageService {
         return repository
                 .findByReceiverAndExpiresAtAfterOrderByCreatedAtAsc(
                         receiver,
-                        LocalDateTime.now())
+                        Instant.now())
                 .stream()
                 .map(message -> new MessageResponse(
                         message.getId(),
@@ -125,7 +125,7 @@ public class MessageService {
                 repository
                         .findByReceiverAndIsReadFalseAndExpiresAtAfterOrderByCreatedAtAsc(
                                 receiver,
-                                LocalDateTime.now())
+                                Instant.now())
                         .stream()
                         .map(message -> new MessageResponse(
                                 message.getId(),
