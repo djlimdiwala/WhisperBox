@@ -53,6 +53,23 @@ document
     .getElementById("sendBtn")
     .onclick = sendMessage;
 
+    document
+        .getElementById("imageBtn")
+        .onclick = () => {
+
+            document
+                .getElementById("imageInput")
+                .click();
+
+        };
+
+    document
+        .getElementById("imageInput")
+        .addEventListener(
+            "change",
+            uploadImage
+        );
+
 function formatTime(date) {
 
     return new Intl.DateTimeFormat(
@@ -109,7 +126,18 @@ function render(messages) {
             </div>
 
             <div>
-                ${m.message}
+
+            ${m.messageType === "IMAGE"
+
+            ? `<img
+                    src="${m.message}"
+                    class="chat-image"
+                    onclick="showImage('${m.message}')">`
+
+            : m.message
+
+            }
+
             </div>
 
             <div class="time">
@@ -176,6 +204,66 @@ function toast(message) {
         t.style.display = "none";
 
     }, 3000);
+
+}
+
+async function uploadImage() {
+
+    const file =
+        document
+            .getElementById("imageInput")
+            .files[0];
+
+    if (!file)
+        return;
+
+    const form =
+        new FormData();
+
+    form.append("file", file);
+
+    try {
+
+        const upload =
+            await fetch("/upload/image", {
+
+                method: "POST",
+
+                body: form
+
+            });
+
+        const image =
+            await upload.json();
+
+        await fetch(`${CONFIG.API_BASE}/${secret}`, {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify({
+
+                message: image.url,
+
+                messageType: "IMAGE"
+
+            })
+
+        });
+
+    }
+    catch {
+
+        toast("Image upload failed");
+
+    }
+
+    document.getElementById("imageInput").value = "";
 
 }
 
@@ -333,3 +421,20 @@ async function startPresence() {
 }
 
 startPresence();
+
+function showImage(url){
+
+    const overlay =
+        document.createElement("div");
+
+    overlay.className = "image-overlay";
+
+    overlay.innerHTML =
+        `<img src="${url}">`;
+
+    overlay.onclick =
+        () => overlay.remove();
+
+    document.body.appendChild(overlay);
+
+}

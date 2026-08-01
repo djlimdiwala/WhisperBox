@@ -1,8 +1,6 @@
 package com.whisperbox.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
 import java.time.Instant;
 
@@ -17,16 +15,23 @@ public class MessageResponse {
     @Schema(example = "Hello!")
     private String message;
 
-    @Schema(example = "2026-07-24T12:30:15")
+    @Schema(example = "TEXT")
+    private String messageType;
+
+    @Schema(example = "2026-07-24T12:30:15Z")
     private Instant createdAt;
 
-    public MessageResponse(Long id,
-                           String sender,
-                           String message,
-                           Instant createdAt) {
+    public MessageResponse(
+            Long id,
+            String sender,
+            String message,
+            String messageType,
+            Instant createdAt) {
+
         this.id = id;
         this.sender = sender;
         this.message = message;
+        this.messageType = messageType;
         this.createdAt = createdAt;
     }
 
@@ -40,6 +45,10 @@ public class MessageResponse {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getMessageType() {
+        return messageType;
     }
 
     public Instant getCreatedAt() {

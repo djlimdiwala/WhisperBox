@@ -261,3 +261,64 @@ button:disabled {
     }
 
 }
+
+
+#imageBtn{
+
+    width:50px;
+
+    height:50px;
+
+    border-radius:50%;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+}
+
+.chat-image{
+
+    max-width:280px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.chat-image:hover{
+
+    transform:scale(1.03);
+
+}
+
+.image-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.9);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:99999;
+
+}
+
+.image-overlay img{
+
+    max-width:90%;
+
+    max-height:90%;
+
+    border-radius:10px;
+
+}

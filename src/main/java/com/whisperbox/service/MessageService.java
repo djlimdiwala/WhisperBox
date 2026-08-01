@@ -41,6 +41,11 @@ public class MessageService {
         message.setSender(properties.sender(userKey));
         message.setReceiver(properties.receiver(userKey));
         message.setMessage(request.getMessage());
+        message.setMessageType(
+        request.getMessageType() == null
+                ? "TEXT"
+                : request.getMessageType()
+        );
         message.setCreatedAt(Instant.now());
         message.setExpiresAt(Instant.now().plusSeconds(30L * 24 * 60 * 60));
 
@@ -58,6 +63,7 @@ public class MessageService {
                         saved.getId(),
                         saved.getSender(),
                         saved.getMessage(),
+                        saved.getMessageType(),
                         saved.getCreatedAt()
                 );
 
@@ -87,6 +93,7 @@ public class MessageService {
                         message.getId(),
                         message.getSender(),
                         message.getMessage(),
+                        message.getMessageType(),
                         message.getCreatedAt()
                 ))
                 .toList();
@@ -111,6 +118,7 @@ public class MessageService {
                         message.getId(),
                         message.getSender(),
                         message.getMessage(),
+                        message.getMessageType(),
                         message.getCreatedAt()
                 ))
                 .toList();
@@ -131,6 +139,7 @@ public class MessageService {
                                 message.getId(),
                                 message.getSender(),
                                 message.getMessage(),
+                                message.getMessageType(),
                                 message.getCreatedAt()
                         ))
                         .toList();

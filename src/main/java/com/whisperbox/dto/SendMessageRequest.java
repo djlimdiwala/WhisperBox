@@ -8,6 +8,16 @@ public class SendMessageRequest {
     @Schema(description = "Message to send")
     @NotBlank(message = "Message cannot be blank")
     private String message;
+    private String messageType = "TEXT";
+
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
+    }
 
     public SendMessageRequest() {
     }

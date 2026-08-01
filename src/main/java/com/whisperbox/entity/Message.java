@@ -22,6 +22,8 @@ public class Message {
     private Instant expiresAt;
 
     private boolean isRead;
+
+    private String messageType = "TEXT";
     
     public Message() {
     }
@@ -72,5 +74,13 @@ public class Message {
 
     public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
+    }
+
+    public String getMessageType() {
+    return messageType;
+}
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
     }
 }
